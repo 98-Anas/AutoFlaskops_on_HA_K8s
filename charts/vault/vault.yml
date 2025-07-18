@@ -9,7 +9,7 @@ server:
 
     ingressClassName: "alb"
     hosts:
-      - host: "http://k8s-sharedgroup-0b252ea594-1277142832.us-east-1.elb.amazonaws.com/vault"  # Matches ingress path
+      - host: "http://k8s-sharedgroup-0b252ea594-1400861534.us-east-1.elb.amazonaws.com"  # Matches ingress path
         paths:
           - /vault
     annotations:
