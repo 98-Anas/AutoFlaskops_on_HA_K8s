@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: db-cm
+  namespace: {{ .Values.namespace }}
+data:
+  MYSQL_ROOT_PASSWORD: "root"

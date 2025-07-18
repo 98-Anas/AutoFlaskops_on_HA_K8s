@@ -1,0 +1,46 @@
+---
+- name: Ensure NFS utilities are installed
+  apt:
+    name: nfs-kernel-server
+    state: present
+    update_cache: yes
+
+- name: Create export directory
+  file:
+    path: "{{ nfs_export_path }}"
+    state: directory
+    owner: nobody
+    group: nogroup
+    mode: '0755'
+
+- name: Configure /etc/exports for NFS
+  lineinfile:
+    path: /etc/exports
+    create: yes
+    line: "{{ nfs_export_path }} {{ nfs_export_network }}(rw,sync,no_subtree_check,no_root_squash)"
+    state: present
+
+- name: Export NFS shares
+  command: exportfs -rav
+
+- name: Ensure NFS service is enabled and started
+  service:
+    name: "{{ nfs_service_name }}"
+    state: started
+    enabled: yes
+
+- name: Open NFS port in UFW (if UFW is installed)
+  ufw:
+    rule: allow
+    proto: tcp
+    port: nfs
+    from_ip: "{{ nfs_export_network }}"
+  when: ansible_facts.packages.ufw is defined
+
+- name: Verify export is available (show exportfs)
+  command: exportfs -v
+  register: exportfs_output
+
+- name: Display export configuration
+  debug:
+    msg: "NFS exports:\n{{ exportfs_output.stdout }}"

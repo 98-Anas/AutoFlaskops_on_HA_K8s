@@ -1,0 +1,37 @@
+---
+# tasks file for ha-proxy
+
+- name: Update apt cache
+  become: true
+  apt:
+    update_cache: yes
+
+- name: Install haproxy
+  become: true
+  apt:
+    name: haproxy
+    state: present
+
+- name: Generate haproxy.cfg from template
+  become: true
+  template:
+    src: haproxy.cfg.j2
+    dest: /etc/haproxy/haproxy.cfg
+    mode: '0644'
+
+- name: Restart haproxy
+  become: true
+  systemd:
+    name: haproxy
+    state: restarted
+    enabled: true
+
+- name: Check haproxy status
+  become: true
+  systemd:
+    name: haproxy
+  register: haproxy_status
+
+- name: Show haproxy status
+  debug:
+    var: haproxy_status

@@ -1,0 +1,7 @@
+---
+# defaults file for ha-proxy
+
+loadbalancer_ip: "{{ lookup('pipe', 'dig +short loadbalancer') | trim }}"
+controlplane01_ip: "{{ lookup('pipe', 'dig +short controlplane01') | trim }}"
+controlplane02_ip: "{{ lookup('pipe', 'dig +short controlplane02') | trim }}"
+controlplane03_ip: "{{ lookup('pipe', 'dig +short controlplane03') | trim }}"

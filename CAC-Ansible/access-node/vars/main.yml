@@ -1,0 +1,3 @@
+---
+playbook_dir: "/home/a7md/FlaskOps/CAC-Ansible"
+ansible_user: "ubuntu"

@@ -1,0 +1,9 @@
+infrapiolt/.terraform
+
+# Ignore Terraform state files
+infrapiolt/*.tfstate
+infrapiolt/*.tfstate.backup
+infrapiolt/.terraform.lock.hcl
+infrapiolt/*.backup
+
+infrapiolt/variables.tf

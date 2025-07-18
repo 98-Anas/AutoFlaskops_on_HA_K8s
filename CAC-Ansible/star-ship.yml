@@ -1,0 +1,145 @@
+---
+
+- hosts: _access_node
+  gather_facts: false
+  become: true
+  roles:
+    - role: access-node
+  tags: 
+    - bootstrap
+
+- hosts: nfs-server
+  gather_facts: false
+  become: true
+  roles:
+    - role: nfs-server
+  tags: 
+    - nfs
+  
+
+- hosts: loadbalancer
+  gather_facts: false
+  become: true
+  roles:
+    - role: ha-proxy
+  tags: 
+    - loadbalancer
+
+- hosts: k8s-plane
+  gather_facts: true
+  become: true
+  roles:
+    - role: k8s-as-code
+  tags: 
+    - controlplane
+
+- hosts: control-plane-leader
+  gather_facts: true
+  become: true
+  tags: 
+    - master-leader
+  tasks:
+
+    - name: Get Load Balancer IP via DNS lookup
+      command: dig +short loadbalancer
+      register: lb_ip_result
+      changed_when: false  # This command doesn't change system state
+
+    - name: Extract LB IP from result
+      set_fact:
+        lb_ip: "{{ lb_ip_result.stdout.strip() }}"
+  
+    - name: Install k8s using kubeadm init 
+      command: >
+        sudo kubeadm init 
+        --pod-network-cidr 192.168.0.0/16 
+        --control-plane-endpoint "{{ lb_ip }}:6443"
+        --upload-certs
+      register: kubeadm_init_output
+      run_once: true
+
+    - name: Save the kubeadm join command to a file
+      copy:
+        content: "{{ kubeadm_init_output.stdout }}"
+        dest: /tmp/kubeadm_join_command.sh
+        mode: 0644
+      run_once: true
+
+    - name: Extract master join command from file
+      slurp:
+        src: /tmp/kubeadm_join_command.sh
+      register: join_file_content
+
+    - name: Set master join command fact from file
+      set_fact:
+        master_join_command: "{{ (join_file_content.content | b64decode) | regex_search('kubeadm join [\\s\\S]*?--control-plane[\\s\\S]*?certificate-key \\S+', multiline=True) | default('', true) | regex_replace('[\\n\\t\\\\]', ' ') }}"
+     
+
+    - name: Extract worker join command from file
+      set_fact:
+        worker_join_command: "{{ (join_file_content.content | b64decode) | regex_search('kubeadm join [\\s\\S]*?discovery-token-ca-cert-hash \\S+', multiline=True) | default('', true) | regex_replace('[\\n\\t\\\\]', ' ') }}"
+
+    
+    - name: Save the master join command to a file
+      copy:
+        content: "{{ master_join_command }}"
+        dest: /tmp/master_join_command.sh
+        mode: 0644
+
+    - name: Save the worker join command to a file
+      copy:
+        content: "{{ worker_join_command }}"
+        dest: /tmp/worker_join_command.sh
+        mode: 0644
+
+    - name: Install network plugin (calico) Weave does not work too well with HA clusters.
+      shell: |
+        sudo kubectl --kubeconfig /etc/kubernetes/admin.conf create -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.3/manifests/tigera-operator.yaml
+        sudo kubectl --kubeconfig /etc/kubernetes/admin.conf create -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.3/manifests/custom-resources.yaml
+      become: false
+      run_once: true
+
+    - name: Copy Kube config to user home directory
+      shell: |
+        mkdir -p $HOME/.kube
+        sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+        sudo chown $(id -u):$(id -g) $HOME/.kube/config
+      become: false
+
+    - name: Install kubectl completion
+      shell: |
+        echo "source <(kubectl completion bash)" >> $HOME/.bashrc
+        . $HOME/.bashrc
+      become: false
+      args:
+        executable: /bin/bash
+
+- hosts: control-plane-joiners
+  gather_facts: true
+  become: true
+  tags: 
+    - master-joiners
+  tasks:
+    - name: Master Nodes Join
+      shell: sudo {{ hostvars['controlplane01']['master_join_command'] }}
+
+    - name: Copy Kube config to user home directory
+      shell: |
+        mkdir -p $HOME/.kube
+        sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+        sudo chown $(id -u):$(id -g) $HOME/.kube/config
+      become: false
+
+    - name: Copy Kube config to user home directory
+      shell: |
+        mkdir -p $HOME/.kube
+        sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+        sudo chown $(id -u):$(id -g) $HOME/.kube/config
+      become: false
+
+- hosts: data-plane
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Worker Nodes Join
+      shell: sudo {{ hostvars['controlplane01']['worker_join_command'] }}

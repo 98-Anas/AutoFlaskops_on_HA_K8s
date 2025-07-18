@@ -1,0 +1,61 @@
+grafana:
+  adminUser: admin
+  adminPassword: admin
+  service:
+    type: NodePort  
+  env:
+    GF_SERVER_ROOT_URL: "http://k8s-sharedgroup-0b252ea594-1277142832.us-east-1.elb.amazonaws.com/grafana"
+    GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+  ingress:
+    enabled: true
+    ingressClassName: alb
+    path: "/grafana"
+    pathType: Prefix
+    annotations:
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+      alb.ingress.kubernetes.io/group.name: "shared-group"
+      alb.ingress.kubernetes.io/group.priority: "3"
+
+alertmanager:
+  enabled: true
+  service:
+    type: NodePort
+  alertmanagerSpec:
+    externalUrl: "http://k8s-sharedgroup-0b252ea594-1277142832.us-east-1.elb.amazonaws.com/alertmanager"  # Matches ingress path
+    routePrefix: "/alertmanager"
+  ingress:
+    enabled: true
+    ingressClassName: alb
+    paths:
+      - /alertmanager
+
+    pathType: Prefix
+    
+    annotations:
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+      alb.ingress.kubernetes.io/group.name: "shared-group"
+      alb.ingress.kubernetes.io/group.priority: "4"
+
+prometheus:
+
+  service:
+    type: NodePort
+
+  ingress:
+    enabled: true
+    ingressClassName: alb
+    paths:
+      - /prometheus
+
+    pathType: Prefix
+     
+    annotations:
+      alb.ingress.kubernetes.io/scheme: internet-facing
+      alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+      alb.ingress.kubernetes.io/group.name: "shared-group"
+      alb.ingress.kubernetes.io/group.priority: "5"
+  prometheusSpec:
+    externalUrl: "http://k8s-sharedgroup-0b252ea594-1277142832.us-east-1.elb.amazonaws.com/prometheus"
+    routePrefix: "/prometheus"

@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-db-netpol
+  namespace: {{ .Values.namespace }}
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ .Release.Name }}db
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: {{ .Release.Name }}
+    ports:
+    - protocol: TCP
+      port: {{ .Values.dbservice.port | default 3306 }}

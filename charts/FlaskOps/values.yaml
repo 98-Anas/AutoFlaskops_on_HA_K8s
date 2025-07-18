@@ -1,0 +1,28 @@
+# Default values for FlaskOps.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+namespace: flaskops
+replicaCount: 1
+
+flaskops:
+  repository: a7md12/flaskops
+  tag: v1.0.0
+  pullPolicy: IfNotPresent
+
+flaskdb:
+  repository: a7md12/flask-db
+  tag: v1.0.0
+  pullPolicy: IfNotPresent
+
+service:
+  type: NodePort
+  port: 80
+  targetPort: 5002
+
+dbservice:
+  type: ClusterIP
+  port: 3306
+  targetPort: 3306
+
+

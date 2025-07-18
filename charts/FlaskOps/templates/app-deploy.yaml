@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: {{ .Values.namespace }}
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      containers:
+      - name: {{ .Release.Name }}
+        image: {{ .Values.flaskops.repository }}:{{ .Values.flaskops.tag | default "latest" }}
+        envFrom:
+          - configMapRef:
+             name: app-cm
+        ports:
+        - containerPort: 5002
+        readinessProbe:
+          tcpSocket:
+            port: 5002
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: 5002
+          initialDelaySeconds: 15
+          periodSeconds: 20

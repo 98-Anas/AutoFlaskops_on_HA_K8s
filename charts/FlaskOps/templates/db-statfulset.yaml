@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}-db
+  namespace: {{ .Values.namespace }}
+spec:
+  serviceName: "db-service"
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}db
+  replicas: {{ .Values.replicaCount | default 1 }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}db
+    spec:
+      # <--- Here we reference the Docker registry pull secret
+      imagePullSecrets:
+        - name: regcred
+
+      containers:
+        - name: {{ .Release.Name }}-db
+          image: "{{ .Values.flaskdb.repository }}:{{ .Values.flaskdb.tag }}"   # must be set in values.yaml
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: db-cm
+          ports:
+            - containerPort: 3306
+          readinessProbe:
+          tcpSocket:
+            port: 3306
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 1
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /var/lib/mysql
+
+  volumeClaimTemplates:
+    - metadata: 
+        name: mysql-data
+      spec:
+        accessModes: 
+          - ReadWriteMany
+        storageClassName: "nfs-client"
+        resources:
+          requests:
+            storage: 2Gi

@@ -1,0 +1,87 @@
+# Get Public IP of the cloudshell server. This allows us to lock down SSH access
+# into the environment from anyone other than yourself, by inserting its public
+# IP to a security group ingress rule.
+data "localos_public_ip" "cloudshell_ip" {}
+
+# Add the public IP to the security group ingress rule.
+resource "aws_security_group_rule" "cloudshell_ingress" {
+    type              = "ingress"
+    from_port         = 22
+    to_port           = 22
+    protocol          = "tcp"
+    cidr_blocks       = ["${data.localos_public_ip.cloudshell_ip.ip}/32"]
+    security_group_id = "${aws_security_group.default.id}"
+}
+
+---------------------------------------------
+# Generally not good practice to generate keys like this in Terraform
+# as the key material is stored in the state file.
+# Key pairs should be created externally and passed to Terraform as
+# a variable.
+
+---------------------------------------------
+
+# Create one network interfaces (ENI) for each kubenode.
+# We need to create these spearately from the instances themselves to prevent
+# a circular dependency when setting up host files in the EC2 instances - we
+# need to know the IP addresses the nodes will have before they are actually
+# created.
+
+---------------------------------------------
+Apply complete! Resources: 50 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+address_access_node = "34.229.142.54"
+address_node01 = "13.219.203.8"
+address_node02 = "18.208.198.123"
+connect_access_node = <<EOT
+Use the following command to log into access-node
+
+  ssh ubuntu@34.229.142.54
+                  
+
+
+EOT
+
+-------------------------------------
+Install network plugin (calico) Weave does not work too well with HA clusters.
+kubectl  create -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.3/manifests/tigera-operator.yaml
+kubectl  create -f https://raw.githubusercontent.com/projectcalico/calico/v3.26.3/manifests/custom-resources.yaml
+
+------------------------------------
+
+install nfs sub-directory provisioner for dynamic provisioning of PVs on the nfs node
+
+------------------------------------
+### install helm
+  curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+  chmod 700 get_helm.sh
+  ./get_helm.sh
+-------------------------------------
+## access node after setuping the cluster
+mkdir ~/.kube
+    scp controlplane01:~/.kube/config ~/.kube/config
+
+-------------------------------------
+kubectl patch node <worker_node_name> -p '{"spec":{"providerID":"aws:///<Region>/<WORKER_ID>"}}'
+
+-----------------------------------
+#Install aws-load-balancer controller
+helm repo add eks https://aws.github.io/eks-charts
+helm install aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=kubernetes #update cluster name if needed
+
+don,t forget to create aws-load-balancer-role and attach it to the aws-load-balancer-controller service account or to instances directly 
+the first method is more secure but you will need to have oidc provider on aws
+
+When you give the Load Balancer Controller AWS permissions by attaching a role to the EC2 instances (“instance‑profile IAM role”), all pods on that node implicitly inherit those rights. In contrast, with IRSA (“IAM Roles for Service Accounts”), you scope AWS privileges only to the specific Kubernetes ServiceAccount that you choose. Here’s the breakdown:
+
+Aspect	EC2 Instance Profile	IRSA (IAM Roles for Service Accounts)
+How it works	You attach an IAM role to each node’s EC2 instance profile. Any container on that node can use the instance metadata endpoint to obtain those credentials.	You associate your cluster with an OIDC provider, then annotate a specific ServiceAccount so that pods using it can assume a distinct IAM role.
+Granularity	Coarse. All pods on the node get the same permissions.	Fine‑grained. Only pods bound to that ServiceAccount get the role.
+Security surface	Larger blast radius—if one pod is compromised, it can call any AWS API your instance role allows.	Reduced blast radius—only workloads using that SA can call AWS APIs, and you can give each SA a different, minimal policy.
+Configuration complexity	Simple to set up—just attach the role in the EC2 console or via Terraform/CloudFormation.	A bit more involved: you must create an IAM OIDC provider, define the IAM role’s trust policy, and annotate the Kubernetes ServiceAccount.
+Policy management	You manage one or a few node‑level policies.	You can manage multiple, per‑application policies tied to SAs.
+Pod mobility	If pods move between nodes, they always have the same credentials.	Pods keep credentials regardless of which node they land on—because the identity flows through the ServiceAccount token.
+-------------------------------------------
+❯ kubectl -n gitops get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d

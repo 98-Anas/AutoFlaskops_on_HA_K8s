@@ -1,0 +1,5 @@
+---
+# defaults file for nfs-server
+nfs_export_path: /export/k8s
+nfs_export_network: 172.31.0.0/16
+nfs_service_name: nfs-server

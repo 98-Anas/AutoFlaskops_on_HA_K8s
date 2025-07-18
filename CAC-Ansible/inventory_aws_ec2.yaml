@@ -1,0 +1,24 @@
+plugin: amazon.aws.aws_ec2
+
+group_prefix: ""
+
+regions:
+  - us-east-1
+
+filters:
+  instance-state-name: running
+  tag:Project: "FlaskOps"
+
+keyed_groups:
+  - key: tags.Role
+    prefix: ""
+
+
+
+
+
+# Required Vars
+vars:
+  ansible_port: 22
+  ansible_user: ubuntu
+  

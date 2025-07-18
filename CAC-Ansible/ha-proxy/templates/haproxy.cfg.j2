@@ -1,0 +1,13 @@
+frontend kubernetes
+    bind {{ loadbalancer_ip }}:6443
+    option tcplog
+    mode tcp
+    default_backend kubernetes-control-nodes
+
+backend kubernetes-control-nodes
+    mode tcp
+    balance roundrobin
+    option tcp-check
+    server controlplane01 {{ controlplane01_ip }}:6443 check fall 3 rise 2
+    server controlplane02 {{ controlplane02_ip }}:6443 check fall 3 rise 2
+    server controlplane03 {{ controlplane03_ip }}:6443 check fall 3 rise 2
