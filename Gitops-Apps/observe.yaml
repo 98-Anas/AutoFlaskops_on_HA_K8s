@@ -6,9 +6,9 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/Ahmd-Sadka/Flaskops-mainefests.git
+    repoURL: https://github.com/Ahmd-Sadka/FlaskOps-on-k8s.git
     targetRevision: HEAD
-    path: kube-prometheus-stack
+    path: charts/kube-prometheus-stack
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring

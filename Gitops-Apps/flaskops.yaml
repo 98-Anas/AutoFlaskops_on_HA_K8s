@@ -2,13 +2,13 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: flaskops
-  namespace: argocd
+  namespace: gitops
 spec:
   project: default
   source:
-    repoURL: https://github.com/Ahmd-Sadka/Flaskops-mainefests.git
+    repoURL: https://github.com/Ahmd-Sadka/FlaskOps-on-k8s.git
     targetRevision: HEAD
-    path: FlaskOps
+    path: charts/FlaskOps
   destination:
     server: https://kubernetes.default.svc
     namespace: flaskops
