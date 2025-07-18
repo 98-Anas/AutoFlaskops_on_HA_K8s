@@ -9,6 +9,9 @@ spec:
     repoURL: https://github.com/Ahmd-Sadka/FlaskOps-on-k8s.git
     targetRevision: HEAD
     path: charts/kube-prometheus-stack
+    helm:
+      valueFiles:
+        - monitoring.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
