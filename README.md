@@ -300,7 +300,7 @@ A special thanks to my mentor for the invaluable guidance and support throughout
   **Ahmed Mohamedy**
   
   [![GitHub](https://img.shields.io/badge/GitHub-Ahmd--Sadka-181717?style=for-the-badge&logo=github)](https://github.com/Ahmd-Sadka)
-  [![LinkedIn](https://img.shields.io/badge/LinkedIn-Ahmed%20Mohamedy-0A66C2?style=for-the-badge&logo=linkedin)](https://linkedin.com/in/ahmed-mohamedy)
+  [![LinkedIn](https://img.shields.io/badge/LinkedIn-Ahmed%20Mohamedy-0A66C2?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/in/ahmed-mohamedy-354166239/)
 </div>
 
 > _"Infrastructure as Code, Configuration as Code, Everything as Code!"_
