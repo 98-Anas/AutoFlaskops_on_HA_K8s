@@ -208,7 +208,7 @@ visit http://<ALB-DNS>/vault
 - RBAC and network policies enforced via Ansible.
 - Sensitive data injected as Kubernetes secrets.
 
-# you will need to explixtly add a role to your cluster nodes with aws-load-balancer-controller policy if you will use it as an ingress controller for your cluster. also you may need a oidc provider for IRSA or you can simply create a sercret with your access key and secret key and bind it to aws-load-balancer-controller deployment for just simplicity.
+you will need to explixtly add a role to your cluster nodes with aws-load-balancer-controller policy if you will use it as an ingress controller for your cluster. also you may need a oidc provider for IRSA or you can simply create a sercret with your access key and secret key and bind it to aws-load-balancer-controller deployment for just simplicity.
 
 ---
 
