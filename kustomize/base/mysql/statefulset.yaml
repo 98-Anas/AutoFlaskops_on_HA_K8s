@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql
+spec:
+  selector:
+    matchLabels:
+      app: mysql
+  serviceName: "db-service"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      imagePullSecrets:
+        - name: dockerhub-secret
+      containers:
+        - name: mysql
+          image: shehabfahmy/fawry-k8s-project-mysql:latest
+          readinessProbe:
+            tcpSocket:
+              port: 3306
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          startupProbe:
+            tcpSocket:
+              port: 3306
+            failureThreshold: 6
+            periodSeconds: 10
+          ports:
+            - containerPort: 3306
+          envFrom:
+            - configMapRef:
+                name: db-cm
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-data
+          persistentVolumeClaim:
+            claimName: db-pvc
+

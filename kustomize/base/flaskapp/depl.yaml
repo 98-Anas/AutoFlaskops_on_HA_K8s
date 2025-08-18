@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flaskapp-depl
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: flaskapp
+  template:
+    metadata:
+      labels:
+        app: flaskapp
+    spec:
+      initContainers:
+      - name: wait-for-db
+        image: busybox
+        command: ['sh', '-c', 'until nc -z $MYSQL_DATABASE_HOST 3306; do echo "waiting for db"; sleep 5; done']
+        envFrom:
+          - configMapRef:
+              name: flaskapp-cm
+      containers:
+      - name: flaskapp
+        image: shehabfahmy/fawry-k8s-project-flaskapp:latest
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 5002
+          initialDelaySeconds: 10
+          periodSeconds: 20
+        ports:
+          - containerPort: 5002
+        envFrom:
+          - configMapRef:
+              name: flaskapp-cm
+
