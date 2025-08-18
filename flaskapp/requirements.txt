@@ -3,3 +3,7 @@ mysql-connector
 flask-mysql
 mysql
 cryptography
+pytest
+pytest-cov
+pytest-mock
+coverage

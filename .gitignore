@@ -7,3 +7,7 @@ infrapiolt/.terraform.lock.hcl
 infrapiolt/*.backup
 
 infrapiolt/variables.tf
+
+flaskapp/.env
+flaskapp/__pycache__/
+flaskapp/tests/__pycache__
