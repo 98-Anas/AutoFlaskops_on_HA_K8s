@@ -1,0 +1,8 @@
+# Linting and formatting dependencies
+flake8==7.1.1
+flake8-html
+flake8-docstrings==1.7.0
+flake8-import-order==0.18.2
+flake8-bugbear==24.4.26
+black==24.4.2
+isort==5.13.2
