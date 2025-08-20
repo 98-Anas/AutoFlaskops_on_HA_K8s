@@ -171,6 +171,8 @@ container_scanning:
 container_scanning_app:
   stage: container-scanning
   extends: container_scanning
+  rules:   # re-enable with your own rules
+    - if: '$CI_COMMIT_BRANCH == "master"'
   variables:
     CS_IMAGE: $CS_IMAGE_1
     CS_DOCKERFILE_PATH: $CS_DOCKERFILE_PATH_1
@@ -178,6 +180,8 @@ container_scanning_app:
 container_scanning_sql:
   stage: container-scanning
   extends: container_scanning
+  rules:   # 👈 re-enable with your own rules
+    - if: '$CI_COMMIT_BRANCH == "master"'
   variables:
     CS_IMAGE: $CS_IMAGE_2
     CS_DOCKERFILE_PATH: $CS_DOCKERFILE_PATH_2
