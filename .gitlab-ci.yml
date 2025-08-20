@@ -164,16 +164,20 @@ build-mysql:
     - merge_requests
   
 # ==================== CONTAINER SCANNING STAGE ====================
+container_scanning:
+  rules: 
+    - when: never
+
 container_scanning_app:
   stage: container-scanning
-  extends: .container_scanning
+  extends: container_scanning
   variables:
     CS_IMAGE: $CS_IMAGE_1
     CS_DOCKERFILE_PATH: $CS_DOCKERFILE_PATH_1
 
 container_scanning_sql:
   stage: container-scanning
-  extends: .container_scanning
+  extends: container_scanning
   variables:
     CS_IMAGE: $CS_IMAGE_2
     CS_DOCKERFILE_PATH: $CS_DOCKERFILE_PATH_2
