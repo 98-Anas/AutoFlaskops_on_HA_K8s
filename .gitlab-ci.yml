@@ -104,6 +104,7 @@ dep_scan:
   stage: security
   image: python:3.9
   before_script:
+    - cd flaskapp
     - pip install pip-audit
   script:
     - echo "🔒 Running Dependency Scanning..."
@@ -111,9 +112,9 @@ dep_scan:
     - pip-audit -f json --output=lint-dep-scan-report.json -r lintReqs.txt || true
   artifacts:
     reports:
-      dependency_scanning: dep-scan-report.json
+      dependency_scanning: flaskapp/dep-scan-report.json
     paths:
-     - lint-dep-scan-report.json
+     - flaskapp/lint-dep-scan-report.json
     expire_in: 1 week
   only:
     - master
