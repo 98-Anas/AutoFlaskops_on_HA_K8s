@@ -1,0 +1,203 @@
+# GitLab CI/CD Pipeline for Flask + MySQL Application
+# Professional DevOps Pipeline with Security, Quality Gates, and Multi-Environment Deployment
+
+stages:
+  - test
+  - lint
+  - security
+  - build
+  - container-scanning
+
+variables:
+  # Global Variables
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: ""
+  Flask: a7md12/flaskops
+  DB: a7md12/flaskops-db
+  # Image Tags
+  FLASK_IMAGE_TAG: $CI_COMMIT_SHA
+  MYSQL_IMAGE_TAG: $CI_COMMIT_SHA
+  
+# Container scanning
+  CONTAINER_SCANNING_RECURSIVE: "true"
+  CS_IMAGE_1: "${Flask}:${CI_COMMIT_SHA}"
+  CS_IMAGE_2: "${DB}:${CI_COMMIT_SHA}"
+  CS_DOCKERFILE_PATH_1: "$CI_PROJECT_DIR/flaskapp/Dockerfile"
+  CS_DOCKERFILE_PATH_2: "$CI_PROJECT_DIR/mysql/Dockerfile"
+
+# Cache Configuration
+cache:
+  key: "$CI_COMMIT_REF_SLUG"
+  paths:
+    - .cache/pip
+    - flaskapp/.coverage
+    - flaskapp/__pycache__
+
+include:
+  - template: Jobs/SAST.gitlab-ci.yml
+  - template: Jobs/Container-Scanning.gitlab-ci.yml
+
+
+# ==================== TEST STAGE ====================
+unit_tests: 
+  stage: test
+  image: python:3.9
+  before_script:
+    - cd flaskapp
+    - pip install -r requirements.txt
+  script:
+    - echo "Running unit tests with coverage..."
+    - python3 run_tests.py
+    - echo "✅ Unit tests completed!"
+  coverage: '/TOTAL.*\s+(\d+%)$/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: flaskapp/coverage.xml
+    paths:
+      - flaskapp/htmlcov/
+      - flaskapp/.coverage
+    expire_in: 1 week
+  only:
+    - main
+    - develop
+    - merge_requests
+
+# ==================== QUALITY STAGE ====================
+flake8:
+  stage: lint
+  image: python:3.9-slim
+  before_script:
+    - cd flaskapp
+    - pip install -r lintReqs.txt
+  script:
+    - echo "🔍 Running code quality checks..."
+    - flake8 app.py --max-line-length=88 --format=html --htmldir=flake8-report --exit-zero
+    - echo "Running black formatting & isort import sorting checks..."
+    - black --check --diff app.py >> ref-app.py
+    - isort --check-only --diff app.py >> ref-app.py
+  artifacts:
+    paths:
+      - flaskapp/flake8-report/
+      - ref-app.py
+    expire_in: 1 week
+
+hadolint:
+  image: hadolint/hadolint:latest
+  stage: lint
+  script:
+    - hadolint mysql/Dockerfile          
+    - hadolint flaskapp/Dockerfile
+  only:
+    - merge_requests
+    - main
+
+# ==================== SECURITY STAGE ====================
+dep_scan:
+  stage: security
+  image: python:3.9
+  before_script:
+    - pip install pip-audit
+  script:
+    - echo "🔒 Running Dependency Scanning..."
+    - pip-audit -f json --output=dep-scan-report.json -r requirements.txt || true
+    - pip-audit -f json --output=lint-dep-scan-report.json -r lintReqs.txt || true
+  artifacts:
+    reports:
+      dependency_scanning: dep-scan-report.json
+      lint_dependency_scanning: lint-dep-scan-report.json
+    expire_in: 1 week
+
+sast:
+  stage: security
+  needs: ["test"]
+
+
+secrets:
+  stage: security
+  image: trufflesecurity/trufflehog:latest
+  script:
+    - echo "🔍 Scanning for secrets and credentials..."
+    - trufflehog git https://$CI_SERVER_HOST/$CI_PROJECT_PATH.git --branch=$CI_COMMIT_REF_NAME --json --fail > secrets-report.json || true
+    - |
+      if [ -s secrets-report.json ]; then
+        echo "❌ Secrets detected in repository!"
+        cat secrets-report.json
+        exit 1
+      else
+        echo "✅ No secrets detected!"
+      fi
+  artifacts:
+    reports:
+      secret_detection: secrets-report.json
+    expire_in: 1 week
+  allow_failure: false
+
+# ==================== BUILD STAGE ====================
+build:flaskapp:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - echo "$DOCKER_HUB_PASS" | docker login -u "$DOCKER_HUB_USER" --password-stdin
+  script:
+    - echo "Building Flask application image..."
+    - cd flaskapp
+    - docker build -t $Flask:$FLASK_IMAGE_TAG  .
+    - docker push $Flask:$FLASK_IMAGE_TAG
+    - echo "✅ Flask image built and pushed successfully!"
+  only:
+    - main
+    - develop
+    - merge_requests
+
+build:mysql:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - echo "$DOCKER_HUB_PASS" | docker login -u "$DOCKER_HUB_USER" --password-stdin
+  script:
+    - echo "Building MySQL database image..."
+    - cd mysql
+    - docker build -t $DB:$MYSQL_IMAGE_TAG .
+    - docker push $DB:$MYSQL_IMAGE_TAG
+    - echo "✅ MySQL image built and pushed successfully!"
+  only:
+    - main
+    - develop
+    - merge_requests
+  
+container_scanning:
+  stage: container-scanning
+  needs: ["build:flaskapp", "build:mysql"]
+
+container_scanning_1:
+  extends: .container_scanning
+  variables:
+    CS_IMAGE: $CS_IMAGE_1
+    CS_DOCKERFILE_PATH: $CS_DOCKERFILE_PATH_1
+
+container_scanning_2:
+  extends: .container_scanning
+  variables:
+    CS_IMAGE: $CS_IMAGE_2
+    CS_DOCKERFILE_PATH: $CS_DOCKERFILE_PATH_2
+
+
+# ==================== PIPELINE METRICS ====================
+metrics:pipeline:
+  stage: .post
+  image: alpine:latest
+  script:
+    - |
+      echo "📊 Pipeline Metrics:"
+      echo "Duration: $CI_PIPELINE_DURATION seconds"
+      echo "Status: $CI_PIPELINE_STATUS"
+      echo "Commit: $CI_COMMIT_SHA"
+      echo "Branch: $CI_COMMIT_REF_NAME"
+      echo "Triggered by: $GITLAB_USER_NAME"
+  when: always

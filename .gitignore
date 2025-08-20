@@ -10,4 +10,7 @@ infrapiolt/variables.tf
 
 flaskapp/.env
 flaskapp/__pycache__/
+flaskapp/.pytest_cache/
 flaskapp/tests/__pycache__
+flaskapp/htmlcov/
+flaskapp/coverage.xml
