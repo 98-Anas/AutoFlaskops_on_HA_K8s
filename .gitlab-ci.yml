@@ -88,9 +88,7 @@ flake8:
   allow_failure: true
 
 hadolint:
-  image:
-    name: hadolint/hadolint:latest
-    entrypoint: [""]
+  image: hadolint/hadolint:latest-debian
   stage: lint
   script:
     - hadolint mysql/Dockerfile || true
@@ -164,7 +162,7 @@ build-mysql:
     - develop
     - merge_requests
   
-container_scanning:
+.container_scanning:
   stage: container-scanning
 
 
@@ -179,6 +177,8 @@ container_scanning_2:
   variables:
     CS_IMAGE: $CS_IMAGE_2
     CS_DOCKERFILE_PATH: $CS_DOCKERFILE_PATH_2
+    CS_REGISTRY_USER: "$DOCKER_HUB_USER"
+    CS_REGISTRY_PASSWORD: "$DOCKER_HUB_PASS"
 
 
 # ==================== PIPELINE METRICS ====================
