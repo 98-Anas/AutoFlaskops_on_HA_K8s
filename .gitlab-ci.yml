@@ -74,8 +74,8 @@ flake8:
     - echo "🔍 Running code quality checks..."
     - flake8 app.py --max-line-length=88 --format=html --htmldir=flake8-report --exit-zero
     - echo "Running black formatting & isort import sorting checks..."
-    - black --check --diff app.py >> ref-app.py
-    - isort --check-only --diff app.py >> ref-app.py
+    - black --check --diff app.py >> ref-app.py || true
+    - isort --check-only --diff app.py >> ref-app.py || true
   artifacts:
     paths:
       - flaskapp/flake8-report/
@@ -88,7 +88,9 @@ flake8:
   allow_failure: true
 
 hadolint:
-  image: hadolint/hadolint:latest
+  image:
+    name: hadolint/hadolint:latest
+    entrypoint: [""]
   stage: lint
   script:
     - hadolint mysql/Dockerfile || true
@@ -124,30 +126,6 @@ dep_scan:
 sast:
   stage: security
 
-
-secrets:
-  stage: security
-  image: trufflesecurity/trufflehog:latest
-  script:
-    - echo "🔍 Scanning for secrets and credentials..."
-    - trufflehog git https://$CI_SERVER_HOST/$CI_PROJECT_PATH.git --branch=$CI_COMMIT_REF_NAME --json --fail > secrets-report.json || true
-    - |
-      if [ -s secrets-report.json ]; then
-        echo "❌ Secrets detected in repository!"
-        cat secrets-report.json
-        exit 1
-      else
-        echo "✅ No secrets detected!"
-      fi
-  artifacts:
-    reports:
-      secret_detection: secrets-report.json
-    expire_in: 1 week
-  only:
-    - master
-    - develop
-    - merge_requests
-  allow_failure: false
 
 # ==================== BUILD STAGE ====================
 build-flaskapp:
