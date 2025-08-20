@@ -1,5 +1,4 @@
 # GitLab CI/CD Pipeline for Flask + MySQL Application
-# Professional DevOps Pipeline with Security, Quality Gates, and Multi-Environment Deployment
 
 stages:
   - test
@@ -82,6 +81,11 @@ flake8:
       - flaskapp/flake8-report/
       - ref-app.py
     expire_in: 1 week
+  only:
+    - main
+    - develop
+    - merge_requests
+  
 
 hadolint:
   image: hadolint/hadolint:latest
@@ -92,6 +96,7 @@ hadolint:
   only:
     - merge_requests
     - main
+    - develop
 
 # ==================== SECURITY STAGE ====================
 dep_scan:
@@ -106,12 +111,16 @@ dep_scan:
   artifacts:
     reports:
       dependency_scanning: dep-scan-report.json
-      lint_dependency_scanning: lint-dep-scan-report.json
+    paths:
+     - lint-dep-scan-report.json
     expire_in: 1 week
+  only:
+    - main
+    - develop
+    - merge_requests
 
 sast:
   stage: security
-  needs: ["test"]
 
 
 secrets:
@@ -132,10 +141,14 @@ secrets:
     reports:
       secret_detection: secrets-report.json
     expire_in: 1 week
+  only:
+    - main
+    - develop
+    - merge_requests
   allow_failure: false
 
 # ==================== BUILD STAGE ====================
-build:flaskapp:
+build-flaskapp:
   stage: build
   image: docker:latest
   services:
@@ -153,7 +166,7 @@ build:flaskapp:
     - develop
     - merge_requests
 
-build:mysql:
+build-mysql:
   stage: build
   image: docker:latest
   services:
@@ -173,16 +186,16 @@ build:mysql:
   
 container_scanning:
   stage: container-scanning
-  needs: ["build:flaskapp", "build:mysql"]
+
 
 container_scanning_1:
-  extends: .container_scanning
+  extends: container_scanning
   variables:
     CS_IMAGE: $CS_IMAGE_1
     CS_DOCKERFILE_PATH: $CS_DOCKERFILE_PATH_1
 
 container_scanning_2:
-  extends: .container_scanning
+  extends: container_scanning
   variables:
     CS_IMAGE: $CS_IMAGE_2
     CS_DOCKERFILE_PATH: $CS_DOCKERFILE_PATH_2
@@ -200,4 +213,8 @@ metrics:pipeline:
       echo "Commit: $CI_COMMIT_SHA"
       echo "Branch: $CI_COMMIT_REF_NAME"
       echo "Triggered by: $GITLAB_USER_NAME"
+  only:
+    - main
+    - develop
+    - merge_requests
   when: always
