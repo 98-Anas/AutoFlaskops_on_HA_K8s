@@ -79,7 +79,7 @@ flake8:
   artifacts:
     paths:
       - flaskapp/flake8-report/
-      - ref-app.py
+      - flaskapp/ref-app.py
     expire_in: 1 week
   only:
     - master
@@ -162,18 +162,17 @@ build-mysql:
     - develop
     - merge_requests
   
-.container_scanning:
+# ==================== CONTAINER SCANNING STAGE ====================
+container_scanning_app:
   stage: container-scanning
-
-
-container_scanning_1:
-  extends: container_scanning
+  extends: .container_scanning
   variables:
     CS_IMAGE: $CS_IMAGE_1
     CS_DOCKERFILE_PATH: $CS_DOCKERFILE_PATH_1
 
-container_scanning_2:
-  extends: container_scanning
+container_scanning_sql:
+  stage: container-scanning
+  extends: .container_scanning
   variables:
     CS_IMAGE: $CS_IMAGE_2
     CS_DOCKERFILE_PATH: $CS_DOCKERFILE_PATH_2
@@ -189,7 +188,7 @@ metrics:pipeline:
     - |
       echo "📊 Pipeline Metrics:"
       echo "Duration: $CI_PIPELINE_DURATION seconds"
-      echo "Status: $CI_PIPELINE_STATUS"
+      echo "Status: $CI_JOB_STATUS"
       echo "Commit: $CI_COMMIT_SHA"
       echo "Branch: $CI_COMMIT_REF_NAME"
       echo "Triggered by: $GITLAB_USER_NAME"
