@@ -59,7 +59,7 @@ unit_tests:
       - flaskapp/.coverage
     expire_in: 1 week
   only:
-    - main
+    - master
     - develop
     - merge_requests
 
@@ -82,7 +82,7 @@ flake8:
       - ref-app.py
     expire_in: 1 week
   only:
-    - main
+    - master
     - develop
     - merge_requests
   
@@ -95,7 +95,7 @@ hadolint:
     - hadolint flaskapp/Dockerfile
   only:
     - merge_requests
-    - main
+    - master
     - develop
 
 # ==================== SECURITY STAGE ====================
@@ -115,7 +115,7 @@ dep_scan:
      - lint-dep-scan-report.json
     expire_in: 1 week
   only:
-    - main
+    - master
     - develop
     - merge_requests
 
@@ -142,7 +142,7 @@ secrets:
       secret_detection: secrets-report.json
     expire_in: 1 week
   only:
-    - main
+    - master
     - develop
     - merge_requests
   allow_failure: false
@@ -162,7 +162,7 @@ build-flaskapp:
     - docker push $Flask:$FLASK_IMAGE_TAG
     - echo "✅ Flask image built and pushed successfully!"
   only:
-    - main
+    - master
     - develop
     - merge_requests
 
@@ -180,7 +180,7 @@ build-mysql:
     - docker push $DB:$MYSQL_IMAGE_TAG
     - echo "✅ MySQL image built and pushed successfully!"
   only:
-    - main
+    - master
     - develop
     - merge_requests
   
@@ -214,7 +214,7 @@ metrics:pipeline:
       echo "Branch: $CI_COMMIT_REF_NAME"
       echo "Triggered by: $GITLAB_USER_NAME"
   only:
-    - main
+    - master
     - develop
     - merge_requests
   when: always
