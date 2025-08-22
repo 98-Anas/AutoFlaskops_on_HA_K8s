@@ -6,6 +6,7 @@ stages:
   - security
   - build
   - container-scanning
+  - deploy
 
 variables:
   # Global Variables
@@ -187,6 +188,32 @@ container_scanning_sql:
     CS_DOCKERFILE_PATH: $CS_DOCKERFILE_PATH_2
     CS_REGISTRY_USER: "$DOCKER_HUB_USER"
     CS_REGISTRY_PASSWORD: "$DOCKER_HUB_PASS"
+
+
+
+# ==================== DEPLOY STAGE ====================
+update-deploy:
+  stage: deploy
+  image: a7md12/oc-helm:latest
+  before_script:
+    - wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq && chmod +x /usr/local/bin/yq
+    - mkdir -p ~/.kube
+    - echo "$KUBECONFIG_CONTENT" | base64 -d > ~/.kube/config
+    - chmod 600 ~/.kube/config
+    - kubectl cluster-info
+  script:
+    - |      
+      # Update Flask app deployment image
+      # yq eval '.spec.template.spec.containers[0].image = "a7md12/flaskops:'"$CI_COMMIT_SHA"'"' -i kustomize/base/flaskapp/depl.yaml
+      # yq eval '.images[] |= select(.name == "a7md12/flaskops").newTag = strenv(CI_COMMIT_SHA)' -i kustomize/base/flaskapp/kustomization.yaml
+      # # Update MySQL statefulset image  
+      # yq eval '.spec.template.spec.containers[0].image = "a7md12/flaskops-db:'"$CI_COMMIT_SHA"'"' -i kustomize/base/mysql/statefulset.yaml
+
+      echo "Deploying to Kubernetes cluster..."
+      
+      kubectl apply -k kustomize/overlay/production
+  only:
+    - master
 
 
 # ==================== PIPELINE METRICS ====================

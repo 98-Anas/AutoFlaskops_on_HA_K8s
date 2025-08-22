@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql
+spec:
+  volumeClaimTemplates:
+    - metadata: 
+        name: mysql-data
+      spec:
+        accessModes: 
+          - ReadWriteMany
+        storageClassName: "nfs-client"
+        resources:
+          requests:
+            storage: 2Gi

@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - svc.yaml
   - depl.yaml
+  - limit-range.yaml
 
 configMapGenerator:
 - name: flaskapp-cm

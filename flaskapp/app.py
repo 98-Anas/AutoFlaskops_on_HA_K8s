@@ -20,7 +20,7 @@ mysql.init_app(app)
 # set a secret key for the session
 app.secret_key = 'why would I tell you my secret key?'
 
-@app.route("/")
+@app.route("/flask")
 def main():
     return render_template('index.html')
 
