@@ -15,13 +15,13 @@ variables:
   Flask: a7md12/flaskops
   DB: a7md12/flaskops-db
   # Image Tags
-  FLASK_IMAGE_TAG: $CI_COMMIT_SHA
-  MYSQL_IMAGE_TAG: $CI_COMMIT_SHA
+  FLASK_IMAGE_TAG: latest
+  MYSQL_IMAGE_TAG: latest
   
 # Container scanning
   CONTAINER_SCANNING_RECURSIVE: "true"
-  CS_IMAGE_1: "${Flask}:${CI_COMMIT_SHA}"
-  CS_IMAGE_2: "${DB}:${CI_COMMIT_SHA}"
+  CS_IMAGE_1: "${Flask}:${FLASK_IMAGE_TAG}"
+  CS_IMAGE_2: "${DB}:${MYSQL_IMAGE_TAG}"
   CS_DOCKERFILE_PATH_1: "$CI_PROJECT_DIR/flaskapp/Dockerfile"
   CS_DOCKERFILE_PATH_2: "$CI_PROJECT_DIR/mysql/Dockerfile"
 
@@ -192,28 +192,12 @@ container_scanning_sql:
 
 
 # ==================== DEPLOY STAGE ====================
-deploy:
+update-image:
   stage: deploy
-  image: 
-    name: a7md12/oc-helm:latest
-    entrypoint: [""]
-  before_script:
-    # - wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq && chmod +x /usr/local/bin/yq
-    - mkdir -p ~/.kube
-    - echo "$KUBECONFIG_CONTENT" | base64 -d > ~/.kube/config
-    - chmod 600 ~/.kube/config
-    - kubectl cluster-info
+  image: ubuntu:latest
   script:
     - |      
-      # Update Flask app deployment image
-      # yq eval '.spec.template.spec.containers[0].image = "a7md12/flaskops:'"$CI_COMMIT_SHA"'"' -i kustomize/base/flaskapp/depl.yaml
-      # yq eval '.images[] |= select(.name == "a7md12/flaskops").newTag = strenv(CI_COMMIT_SHA)' -i kustomize/base/flaskapp/kustomization.yaml
-      # # Update MySQL statefulset image  
-      # yq eval '.spec.template.spec.containers[0].image = "a7md12/flaskops-db:'"$CI_COMMIT_SHA"'"' -i kustomize/base/mysql/statefulset.yaml
-
-      echo "Deploying to Kubernetes cluster..."
-      
-      kubectl apply -k kustomize/overlay/production
+        echo "deployed using argocd"
   only:
     - master
 

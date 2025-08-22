@@ -7,12 +7,12 @@ replicaCount: 1
 
 flaskops:
   repository: a7md12/flaskops
-  tag: v1.0.0
+  tag: latest
   pullPolicy: IfNotPresent
 
 flaskdb:
   repository: a7md12/flask-db
-  tag: v1.0.0
+  tag: latest
   pullPolicy: IfNotPresent
 
 service:
