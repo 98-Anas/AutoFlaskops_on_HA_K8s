@@ -194,9 +194,11 @@ container_scanning_sql:
 # ==================== DEPLOY STAGE ====================
 update-deploy:
   stage: deploy
-  image: a7md12/oc-helm:latest
+    image: 
+    name: a7md12/oc-helm:latest
+    entrypoint: [""]
   before_script:
-    - wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq && chmod +x /usr/local/bin/yq
+    # - wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq && chmod +x /usr/local/bin/yq
     - mkdir -p ~/.kube
     - echo "$KUBECONFIG_CONTENT" | base64 -d > ~/.kube/config
     - chmod 600 ~/.kube/config
