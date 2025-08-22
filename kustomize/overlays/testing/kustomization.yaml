@@ -1,6 +1,18 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
+namespace: testing
+
 resources:
   - flaskapp/
-#  - mysql/
+  - mysql/
+  - namespace.yaml
+
+images:
+  - name: fawry-project-flaskapp-image
+    newName: shehabfahmy/fawry-k8s-project-flaskapp
+    newTag: latest
+  
+  - name: fawry-project-mysql-image
+    newName: a7md12/flask-db
+    newTag: v1.0.0

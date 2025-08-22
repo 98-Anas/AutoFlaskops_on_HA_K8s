@@ -21,14 +21,7 @@ spec:
               name: flaskapp-cm
       containers:
       - name: flaskapp
-        image: shehabfahmy/fawry-k8s-project-flaskapp:latest
-        resources:
-          requests:
-            memory: "64Mi"
-            cpu: "50m"
-          limits:
-            memory: "256Mi"
-            cpu: "200m"
+        image: fawry-project-flaskapp-image
         livenessProbe:
           httpGet:
             path: /
@@ -40,4 +33,3 @@ spec:
         envFrom:
           - configMapRef:
               name: flaskapp-cm
-
