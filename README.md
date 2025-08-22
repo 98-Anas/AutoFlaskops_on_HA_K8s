@@ -66,7 +66,7 @@ Automated testing, linting, and security scanning:
 ### 6. GitOps Deployments
 ArgoCD applications management:
 <div align="center">
-  <img src="FlaskOps-ss/argocd-apps.png" alt="ArgoCD Applications" width="700"/>
+  <img src="FlaskOps-ss/argo-apps.png" alt="ArgoCD Applications" width="700"/>
 </div>
 
 ---
