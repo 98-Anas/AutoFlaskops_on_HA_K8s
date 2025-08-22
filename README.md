@@ -55,12 +55,29 @@ Comprehensive dashboards with Grafana:
   <img src="FlaskOps-ss/grafana-dashboards.png" alt="Monitoring Dashboards" width="700"/>
 </div>
 
+### 5. CI/CD Pipeline & Code Quality
+Automated testing, linting, and security scanning:
+<div align="center">
+  <img src="FlaskOps-ss/cicd.png" alt="CI/CD Pipeline" width="700"/>
+  <img src="FlaskOps-ss/linting.png" alt="Code Quality Checks" width="700"/>
+  <img src="FlaskOps-ss/unit-testing.png" alt="Unit Tests" width="700"/>
+</div>
+
+### 6. GitOps Deployments
+ArgoCD applications management:
+<div align="center">
+  <img src="FlaskOps-ss/argocd-apps.png" alt="ArgoCD Applications" width="700"/>
+</div>
+
 ---
 
 ## ✨ Features
 
 - **Terraform-powered AWS provisioning**
 - **Ansible-driven cluster configuration**
+- **Automated CI/CD with GitLab**
+- **Code quality & security scanning**
+- **Unit testing with coverage reports**
 - **Helm for Kubernetes deployments**
 - **GitOps deployments with ArgoCD**
 - **Microservices with Flask & MySQL**
@@ -77,6 +94,9 @@ Comprehensive dashboards with Grafana:
 
 | Layer         | Tools & Services                      |
 |---------------|---------------------------------------|
+| CI/CD         | GitLab CI, Docker                     |
+| Code Quality  | Flake8, Black, isort, Hadolint       |
+| Testing       | Python unittest, Coverage.py          |
 | Provisioning  | Terraform                             |
 | Configuration | Ansible, bash                         |
 | Orchestration | Docker, Kubernetes                    |
@@ -292,16 +312,6 @@ This project is licensed under the [MIT License](charts/vault/LICENSE).
 
 A special thanks to my mentor for the invaluable guidance and support throughout this project. Your expertise and patience helped shape not just this project, but my entire DevOps journey.
 
-## ✍️ Author
-
-<div align="center">
-  <img src="https://github.com/Ahmd-Sadka.png" width="150" style="border-radius:50%"/>
-  
-  **Ahmed Mohamedy**
-  
-  [![GitHub](https://img.shields.io/badge/GitHub-Ahmd--Sadka-181717?style=for-the-badge&logo=github)](https://github.com/Ahmd-Sadka)
-  [![LinkedIn](https://img.shields.io/badge/LinkedIn-Ahmed%20Mohamedy-0A66C2?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/in/ahmed-mohamedy-354166239/)
-</div>
 
 > _"Infrastructure as Code, Configuration as Code, Everything as Code!"_
 
