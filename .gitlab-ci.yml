@@ -192,9 +192,9 @@ container_scanning_sql:
 
 
 # ==================== DEPLOY STAGE ====================
-update-deploy:
+deploy:
   stage: deploy
-    image: 
+  image: 
     name: a7md12/oc-helm:latest
     entrypoint: [""]
   before_script:
