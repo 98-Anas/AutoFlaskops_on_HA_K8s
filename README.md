@@ -14,6 +14,7 @@
 ![Vault](https://img.shields.io/badge/security-vault-purple?style=flat-square)
 ![Terraform](https://img.shields.io/badge/infra-terraform-623CE4?style=flat-square)
 ![Ansible](https://img.shields.io/badge/config-ansible-EEA923?style=flat-square)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/98-Anas/AutoFlaskops_on_HA_K8s)
 
 ---
 
